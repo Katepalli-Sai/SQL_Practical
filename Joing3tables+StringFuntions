@@ -1,0 +1,368 @@
+📘 STRUCTURED LEARNING:
+SQL JOINS (3 TABLES) + STRING FUNCTIONS + COALESCE
+
+(Cognizant Interview Level)
+
+🧱 STEP 1: SCHEMA CREATION
+1️⃣ Customers Table
+CREATE TABLE customers (
+    customer_id INT PRIMARY KEY,
+    full_name VARCHAR(100),
+    email VARCHAR(100),
+    phone VARCHAR(15)
+);
+
+2️⃣ Orders Table
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+3️⃣ Order_Items Table
+CREATE TABLE order_items (
+    item_id INT PRIMARY KEY,
+    order_id INT,
+    product_name VARCHAR(100),
+    quantity INT,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+);
+
+🧾 STEP 2: INSERT DATA
+Customers
+INSERT INTO customers VALUES
+(1, '  John Doe  ', 'john@gmail.com', '9876543210'),
+(2, 'Alice Smith', 'alice@yahoo.com', NULL),
+(3, '  Bob Martin ', 'bob@outlook.com', '9123456789');
+
+Orders
+INSERT INTO orders VALUES
+(101, 1, '2024-01-10'),
+(102, 2, '2024-01-12'),
+(103, 1, '2024-01-15'),
+(104, 3, '2024-01-20');
+
+Order Items
+INSERT INTO order_items VALUES
+(1, 101, 'Laptop', 1),
+(2, 101, 'Mouse', 2),
+(3, 102, 'Keyboard', 1),
+(4, 103, 'Monitor', 1),
+(5, 104, 'Printer', 1);
+
+🧠 STEP 3: TABLE CONTENT (FOR UNDERSTANDING)
+customers
+customer_id	full_name	email	phone
+1	John Doe	john@gmail.com
+	9876543210
+2	Alice Smith	alice@yahoo.com
+	NULL
+3	Bob Martin	bob@outlook.com
+	9123456789
+orders
+order_id	customer_id	order_date
+101	1	2024-01-10
+102	2	2024-01-12
+103	1	2024-01-15
+104	3	2024-01-20
+order_items
+item_id	order_id	product_name	quantity
+1	101	Laptop	1
+2	101	Mouse	2
+3	102	Keyboard	1
+4	103	Monitor	1
+5	104	Printer	1
+🎯 QUESTION 1 (EASY)
+❓ Requirement
+
+Show:
+
+Clean customer name
+
+Email
+
+Product name
+
+✅ Query
+SELECT 
+    TRIM(c.full_name) AS clean_name,
+    c.email,
+    oi.product_name
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id;
+
+📊 Output
+clean_name	email	product_name
+John Doe	john@gmail.com
+	Laptop
+John Doe	john@gmail.com
+	Mouse
+Alice Smith	alice@yahoo.com
+	Keyboard
+John Doe	john@gmail.com
+	Monitor
+Bob Martin	bob@outlook.com
+	Printer
+🧠 Explanation
+
+TRIM removes extra spaces
+
+3-table JOIN links customer → order → items
+
+INNER JOIN ensures only valid relationships appear
+
+🎯 QUESTION 2 (MEDIUM – STRING EXTRACTION)
+❓ Requirement
+
+Show:
+
+Customer name
+
+Email domain only
+
+Order date
+
+Product name
+
+✅ Query
+SELECT 
+    TRIM(c.full_name) AS customer_name,
+    SUBSTRING(c.email, INSTR(c.email,'@') + 1) AS domain,
+    o.order_date,
+    oi.product_name
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id;
+
+📊 Output
+customer_name	domain	order_date	product_name
+John Doe	gmail.com	2024-01-10	Laptop
+Alice Smith	yahoo.com	2024-01-12	Keyboard
+Bob Martin	outlook.com	2024-01-20	Printer
+🧠 Explanation
+
+INSTR finds position of @
+
+SUBSTRING extracts text after it
+
+Used for email parsing (very common interview case)
+
+🎯 QUESTION 3 (MEDIUM – COALESCE)
+❓ Requirement
+
+Show:
+
+Customer name
+
+Email
+
+Phone (or “Not Available”)
+
+Product name
+
+✅ Query
+SELECT 
+    TRIM(c.full_name) AS customer_name,
+    c.email,
+    COALESCE(c.phone, 'Not Available') AS phone,
+    oi.product_name
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id;
+
+📊 Output
+customer_name	email	phone	product_name
+John Doe	john@gmail.com
+	9876543210	Laptop
+Alice Smith	alice@yahoo.com
+	Not Available	Keyboard
+Bob Martin	bob@outlook.com
+	9123456789	Printer
+🧠 Explanation
+
+COALESCE returns first non-NULL value
+
+Used for NULL handling in reports
+
+🎯 QUESTION 4 (HARD – FORMATTED STRING)
+❓ Requirement
+
+Create order_summary like:
+
+John Doe | john@gmail.com | Not Available | Laptop
+
+✅ Query
+SELECT 
+    CONCAT(
+        TRIM(c.full_name), ' | ',
+        c.email, ' | ',
+        COALESCE(c.phone, 'Not Available'), ' | ',
+        oi.product_name
+    ) AS order_summary
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id;
+
+📊 Output
+order_summary
+John Doe
+Alice Smith
+Bob Martin
+🧠 Explanation
+
+CONCAT joins multiple strings
+
+TRIM cleans name
+
+COALESCE handles missing phone
+
+Very common in reporting queries
+
+🎯 QUESTION 5 (HARDEST – BUSINESS LOGIC)
+❓ Requirement
+
+Show:
+
+Customer name
+
+Order date
+
+Product name
+
+contact_info:
+
+phone if exists
+
+else email
+
+✅ Query
+SELECT 
+    TRIM(c.full_name) AS customer_name,
+    o.order_date,
+    oi.product_name,
+    COALESCE(c.phone, c.email) AS contact_info
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id;
+
+📊 Output
+customer_name	order_date	product_name	contact_info
+John Doe	2024-01-10	Laptop	9876543210
+Alice Smith	2024-01-12	Keyboard	alice@yahoo.com
+
+Bob Martin	2024-01-20	Printer	9123456789
+🧠 Explanation
+
+COALESCE(phone, email) applies business rule
+
+Guarantees one contact method
+
+Real-world logic, interview favorite
+
+🏆 FINAL LEARNING SUMMARY
+
+You have mastered:
+
+✅ 3-table JOINs
+
+✅ String functions (TRIM, SUBSTRING, INSTR, CONCAT)
+
+✅ NULL handling with COALESCE
+
+✅ Business-rule-based SQL
+
+✅ Cognizant interview patterns
+
+🎯 FINAL INTERVIEW LINE YOU CAN SAY
+
+“I’m comfortable writing multi-table joins with string functions and handling NULLs using COALESCE for real-world reporting queries.”
+
+This is a strong technical answer.
+
+
+// My work in online compiler
+
+
+CREATE TABLE customers (
+    customer_id INT PRIMARY KEY,
+    full_name VARCHAR(100),
+    email VARCHAR(100),
+    phone VARCHAR(15)
+);
+
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+CREATE TABLE order_items (
+    item_id INT PRIMARY KEY,
+    order_id INT,
+    product_name VARCHAR(100),
+    quantity INT,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+);
+
+INSERT INTO customers VALUES
+(1, '  John Doe  ', 'john@gmail.com', '9876543210'),
+(2, 'Alice Smith', 'alice@yahoo.com', NULL),
+(3, '  Bob Martin ', 'bob@outlook.com', '9123456789');
+
+INSERT INTO orders VALUES
+(101, 1, '2024-01-10'),
+(102, 2, '2024-01-12'),
+(103, 1, '2024-01-15'),
+(104, 3, '2024-01-20');
+INSERT INTO order_items VALUES
+(1, 101, 'Laptop', 1),
+(2, 101, 'Mouse', 2),
+(3, 102, 'Keyboard', 1),
+(4, 103, 'Monitor', 1),
+(5, 104, 'Printer', 1);
+
+select *from customers;
+select *from orders;
+select *from order_items;
+
+
+
+
+
+select trim(full_name) as clear_name,email,product_name from customers join orders on customers.customer_id=orders.customer_id join order_items on orders.order_id=order_items.order_id;
+
+select trim(full_name) as clear_name,substring(email,instr(email,'@')+1) as domain_name,order_date,product_name from customers join orders on customers.customer_id=orders.customer_id join order_items on orders.order_id=order_items.order_id;
+
+
+select trim(full_name) as clear_name,email,coalesce(phone,'Not Available'),product_name from customers join orders on customers.customer_id=orders.customer_id join order_items on orders.order_id=order_items.order_id;
+
+select concat(trim(full_name),'|',email,'|',coalesce(phone,'Not Available')) as order_summary from customers join orders on customers.customer_id=orders.customer_id join order_items on orders.order_id=order_items.order_id;
+
+
+select trim(full_name) as clear_name,email,coalesce(phone,email),product_name from customers join orders on customers.customer_id=orders.customer_id join order_items on orders.order_id=order_items.order_id;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
