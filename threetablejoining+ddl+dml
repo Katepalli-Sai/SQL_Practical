@@ -1,0 +1,228 @@
+📘 SQL COMPLETE PRACTICE MODULE
+(3-Table JOINs + DDL + DML)
+🔹 CORE CONCEPTS (INTERVIEW READY)
+1️⃣ DDL (Data Definition Language)
+
+Used to define or modify table structure
+
+CREATE
+
+ALTER
+
+DROP
+
+2️⃣ DML (Data Manipulation Language)
+
+Used to insert or modify data
+
+INSERT
+
+UPDATE
+
+DELETE
+
+3️⃣ DQL (Data Query Language)
+
+Used to fetch data
+
+SELECT
+
+4️⃣ JOIN
+
+Used to combine rows from multiple tables
+
+Based on foreign key relationships
+
+🧱 SCHEMA: UNIVERSITY COURSE MANAGEMENT SYSTEM
+1️⃣ STUDENTS TABLE (DDL)
+CREATE TABLE students (
+    student_id INT PRIMARY KEY,
+    student_name VARCHAR(50),
+    email VARCHAR(100)
+);
+
+2️⃣ COURSES TABLE (DDL)
+CREATE TABLE courses (
+    course_id INT PRIMARY KEY,
+    course_name VARCHAR(50),
+    department VARCHAR(50)
+);
+
+3️⃣ ENROLLMENTS TABLE (DDL)
+CREATE TABLE enrollments (
+    enrollment_id INT PRIMARY KEY,
+    student_id INT,
+    course_id INT,
+    marks INT,
+    FOREIGN KEY (student_id) REFERENCES students(student_id),
+    FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+
+🧾 DATA INSERTION (INPUTS)
+Students
+INSERT INTO students VALUES
+(1, '  Rahul  ', 'rahul@gmail.com'),
+(2, 'Anita', 'anita@yahoo.com'),
+(3, '  Suresh ', 'suresh@outlook.com');
+
+Courses
+INSERT INTO courses VALUES
+(101, 'Database Systems', 'IT'),
+(102, 'Operating Systems', 'IT'),
+(103, 'Accounting Basics', 'Commerce');
+
+Enrollments
+INSERT INTO enrollments VALUES
+(1001, 1, 101, 85),
+(1002, 1, 102, 78),
+(1003, 2, 101, 90),
+(1004, 3, 103, 65);
+
+📊 DATA VIEW (FOR UNDERSTANDING)
+students
+id	name	email
+1	Rahul	rahul@gmail.com
+
+2	Anita	anita@yahoo.com
+
+3	Suresh	suresh@outlook.com
+courses
+id	course	dept
+101	Database Systems	IT
+102	Operating Systems	IT
+103	Accounting Basics	Commerce
+enrollments
+id	student	course	marks
+1001	1	101	85
+1002	1	102	78
+1003	2	101	90
+1004	3	103	65
+🎯 QUERY 1 — EASY (SELECT + 3 JOIN + STRING)
+❓ Requirement
+
+Show:
+
+Clean student name
+
+Email
+
+Course name
+
+Department
+
+✅ SQL
+SELECT 
+    TRIM(s.student_name) AS student_name,
+    s.email,
+    c.course_name,
+    c.department
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id;
+
+📊 Output
+name	email	course	dept
+Rahul	rahul@gmail.com
+	Database Systems	IT
+Rahul	rahul@gmail.com
+	Operating Systems	IT
+Anita	anita@yahoo.com
+	Database Systems	IT
+Suresh	suresh@outlook.com
+	Accounting Basics	Commerce
+🧠 Explanation
+
+TRIM removes extra spaces
+
+JOIN links student → enrollment → course
+
+🎯 QUERY 2 — MEDIUM (DML + UPDATE + JOIN)
+❓ Requirement
+
+Increase marks by 5 for students enrolled in IT department courses
+
+✅ SQL
+UPDATE enrollments e
+JOIN courses c ON e.course_id = c.course_id
+SET e.marks = e.marks + 5
+WHERE c.department = 'IT';
+
+📊 Output (Enrollments After Update)
+student	course	marks
+Rahul	Database Systems	90
+Rahul	Operating Systems	83
+Anita	Database Systems	95
+🧠 Explanation
+
+UPDATE with JOIN modifies related records
+
+Only IT department courses affected
+
+🎯 QUERY 3 — MEDIUM (AGGREGATE + JOIN)
+❓ Requirement
+
+Show average marks per department
+
+✅ SQL
+SELECT 
+    c.department,
+    AVG(e.marks) AS avg_marks
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+GROUP BY c.department;
+
+📊 Output
+department	avg_marks
+IT	89.33
+Commerce	65
+🧠 Explanation
+
+GROUP BY groups rows per department
+
+AVG calculates department-wise average
+
+🎯 QUERY 4 — HARD (DDL)
+❓ Requirement
+
+Add a rule: Marks must be between 0 and 100
+
+✅ SQL
+ALTER TABLE enrollments
+ADD CONSTRAINT chk_marks
+CHECK (marks BETWEEN 0 AND 100);
+
+🧠 Explanation
+
+Prevents invalid marks
+
+Enforced on INSERT and UPDATE
+
+🎯 QUERY 5 — HARDEST (DDL + DML)
+❓ Requirement
+
+Add column result
+
+Set:
+
+PASS if marks ≥ 40
+
+FAIL otherwise
+
+✅ SQL
+ALTER TABLE enrollments
+ADD result VARCHAR(10);
+
+UPDATE enrollments
+SET result = 'PASS'
+WHERE marks >= 40;
+
+UPDATE enrollments
+SET result = 'FAIL'
+WHERE marks < 40;
+
+📊 Output
+student	course	marks	result
+Rahul	Database Systems	90	PASS
+Rahul	Operating Systems	83	PASS
+Anita	Database Systems	95	PASS
+Suresh	Accounting Basics	65	PASS
